@@ -29,9 +29,9 @@
 必要なライブラリをインストールするために、以下のコマンドを実行してください:
 
 ```bash
-pip install selenium
-pip install beautifulsoup4
-pip install jpholiday
+pip3 install selenium
+pip3 install beautifulsoup4
+pip3 install jpholiday
 ```
 
 ## 使用方法
@@ -39,7 +39,7 @@ pip install jpholiday
 1. `index.py`を実行することで、各地区センターの空き状況をチェックできます。
 
 ```bash
-python index.py
+python3 index.py
 ```
 
 2. 必要に応じて、`test.py`や他のPythonファイルを用いて特定のセンターの空き状況をテスト・確認することもできます。
