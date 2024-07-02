@@ -5,7 +5,7 @@ on:
     - cron: "*/30 * * * *"  # 30分ごとに実行
   push:
     branches:
-      - main  # mainブランチへのプッシュ時にも実行
+      - master  # masterブランチへのプッシュ時にも実行
 
 jobs:
   build:
