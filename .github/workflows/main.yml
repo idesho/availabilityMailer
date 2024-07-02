@@ -27,7 +27,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-pip
-        pip3 install selenium beautifulsoup4 jpholiday
+        pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
     - name: Run your application
       run: |
