@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # 30分ごとに実行
+  push:
+    branches:
+      - main  # mainブランチへのプッシュ時にも実行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up environment variables
+      run: |
+        echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+        echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+        echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+        echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+        echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+
+    - name: Run your application
+      run: |
+        echo "Running python script"
+        python3 index.py
