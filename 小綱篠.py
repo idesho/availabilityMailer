@@ -7,6 +7,7 @@ from urllib.parse import parse_qs
 import jpholiday
 from datetime import datetime, date
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
 
 # 日付から曜日を取得し、祝日の場合は"(祝)"を追加する関数
 def get_weekday(date_str):
@@ -63,8 +64,16 @@ def extract_data_from_td(target_tr, time_td, center, i):
             output.append(f"{date_str} ({weekday}){gym_info} ({time})")
     return output
 
+# Chromeのオプションを設定
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')  # 必要に応じて追加
+options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+
 # ウェブドライバーを起動
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(options=options)
 
 # 地区センターごとのURLと範囲を定義
 centers = [

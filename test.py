@@ -2,12 +2,21 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
 import jpholiday
 
+# Chromeのオプションを設定
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')  # 必要に応じて追加
+options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+
 # Selenium WebDriverの初期化
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(options=options)
 
 # 複数のURLをリストで定義
 urls = {
@@ -90,3 +99,4 @@ for area, url in urls.items():
 
 # ブラウザを閉じる
 driver.quit()
+

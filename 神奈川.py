@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 from datetime import timedelta
+from selenium.webdriver.chrome.options import Options
 
 def get_weekday_jp(date_str):
     date = datetime.datetime.strptime(date_str, "%Y/%m/%d")
@@ -114,7 +115,15 @@ centers = [
     # 他の地区センターの情報をここに追加
 ]
 
-driver = webdriver.Chrome()
+# Chromeのオプションを設定
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')  # 必要に応じて追加
+options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+
+driver = webdriver.Chrome(options=options)
 
 try:
     for center in centers:

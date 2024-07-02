@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
 import jpholiday
@@ -45,7 +46,6 @@ def check_availability(driver):
 def parse_availability(page_source, current_year, current_month, id_range):
     """HTMLソースから空き状況を解析して日付情報を取得する。"""
     soup = BeautifulSoup(page_source, 'html.parser')
-    # print(current_year, current_month, id_range)
     date_info = []
     for i in id_range:
         td = soup.find('td', id=f'right_v{i}')
@@ -94,7 +94,15 @@ if __name__ == "__main__":
         {"url": "https://yokohama-shisetsu.com/yoyaku_test/wb_pub.php?sisetu_code=05", "range": range(0, 12), "name": "奈良地区センター"},
     ]
     
-    driver = webdriver.Chrome()
+    # Chromeのオプションを設定
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')  # 必要に応じて追加
+    options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+
+    driver = webdriver.Chrome(options=options)
     
     for center in centers:
         print(f"<br>{center['name']}の空き状況"+"<br>")
@@ -120,7 +128,6 @@ if __name__ == "__main__":
                     current_month = 1
                     current_year += 1
             except (TimeoutException, NoSuchElementException):
-                # print("次の月のボタンが見つかりません。処理を終了します。")
                 break
     
     driver.quit()
