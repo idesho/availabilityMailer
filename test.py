@@ -3,9 +3,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
 from bs4 import BeautifulSoup
 from datetime import datetime
 import jpholiday
+import os
 
 # Chromeのオプションを設定
 options = Options()
@@ -100,8 +102,10 @@ for area, url in urls.items():
 
     except TimeoutException:
         print(f"Timeout occurred while processing {area}")
+        driver.save_screenshot(f"{area}_timeout_error.png")  # エラー時にスクリーンショットを保存
     except Exception as e:
         print(f"An error occurred while processing {area}: {str(e)}")
+        driver.save_screenshot(f"{area}_error.png")  # エラー時にスクリーンショットを保存
 
 # ブラウザを閉じる
 driver.quit()
