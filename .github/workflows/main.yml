@@ -23,7 +23,12 @@ jobs:
         echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
         echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
 
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip
+        pip3 install selenium beautifulsoup4 jpholiday
+
     - name: Run your application
       run: |
-        echo "Running python script"
         python3 index.py
