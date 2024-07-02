@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
-from datetime import date, timedelta
+from datetime import timedelta
 
 def get_weekday_jp(date_str):
     date = datetime.datetime.strptime(date_str, "%Y/%m/%d")
@@ -37,12 +37,12 @@ def process_element(element, start_date, section):
     top_level_divs = soup.find_all('div', recursive=False)
     first_bottom_element = top_level_divs[0].text.strip()
     schedule_data = []
-    today = datetime.date.today()
+    today = datetime.datetime.today().date()
 
     for i, div in enumerate(top_level_divs[1:], start=1):
         style = div.get('style', '')
         if 'background-color: rgb(255, 255, 255)' in style:
-            date = start_date + datetime.timedelta(days=i-1)
+            date = start_date + timedelta(days=i-1)
             date_str = date.strftime("%Y/%m/%d")
             weekday_jp = get_weekday_jp(date_str)
             if date >= today:
@@ -61,7 +61,7 @@ def process_center(driver, center, loops):
     print(f"<br>{center['name']}の空き状況<br>")
     time.sleep(4)
 
-    start_date = datetime.date.today().replace(day=1)
+    start_date = datetime.datetime.today().replace(day=1).date()
     all_schedule_data = []
 
     for _ in range(loops):
@@ -118,8 +118,8 @@ driver = webdriver.Chrome()
 
 try:
     for center in centers:
-        today = datetime.date.today()
-        loops = 3 if (today.day > 12 or (today.day == 12 and today.hour >= 9)) else 2
+        now = datetime.datetime.now()
+        loops = 3 if (now.day > 12 or (now.day == 12 and now.hour >= 9)) else 2
         process_center(driver, center, loops)
 except Exception as e:
     print("エラーが発生しました:", e)
