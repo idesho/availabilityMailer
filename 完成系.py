@@ -80,9 +80,11 @@ def parse_availability(page_source, current_year, current_month, id_range):
 def display_results(date_info_sorted):
     """解析した日付情報をコンソールに出力する。"""
     today = datetime.now()
+    formatted_date = today.strftime("%Y/%m/%d")
+    formatted_date_as_datetime = datetime.strptime(formatted_date, "%Y/%m/%d")
     for date_str, weekday_jp, time_slot, gym_info in date_info_sorted:
         date = datetime.strptime(date_str, "%Y/%m/%d")
-        if date >= today and (weekday_jp in ["土", "日", "祝"]):
+        if date >= formatted_date_as_datetime and (weekday_jp in ["土", "日", "祝"]):
             print(f"{date_str} ({weekday_jp}) ({time_slot}: {gym_info})<br>")
 
 # メイン処理
