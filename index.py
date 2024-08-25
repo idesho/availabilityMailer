@@ -4,17 +4,28 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
+import concurrent.futures
+import subprocess
 
 load_dotenv()
 
-# コマンドを実行して結果を取得
-output1 = os.popen("python3 test.py").read()
-output2 = os.popen("python3 小綱篠.py").read()
-output3 = os.popen("python3 西谷.py").read()
-output4 = os.popen("python3 神奈川.py").read()
-output5 = os.popen("python3 完成系.py").read()
-result = f"{output1}{output2}<br>{output3}{output4}{output5}"
-# print(result)
+def run_command(command):
+    return subprocess.run(command, shell=True, capture_output=True, text=True).stdout
+
+commands = [
+    "python3 test.py",
+    "python3 小綱篠.py",
+    "python3 西谷.py",
+    "python3 神奈川.py",
+    "python3 完成系.py"
+]
+
+# 並行してコマンドを実行
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    results = list(executor.map(run_command, commands))
+
+# 結果を結合
+result = "<br>".join(results)
 
 # 送信先のメールアドレスを取得
 to_emails = os.getenv('TO_EMAILS').split(',')
