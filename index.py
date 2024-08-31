@@ -1,3 +1,4 @@
+import time
 import os
 from datetime import datetime
 import smtplib
@@ -7,6 +8,8 @@ from dotenv import load_dotenv
 import concurrent.futures
 import subprocess
 
+# 処理開始時間を記録
+start_time = time.time()
 load_dotenv()
 
 def run_command(command):
@@ -48,5 +51,8 @@ try:
     server.sendmail(os.getenv('SMTP_USERNAME'), to_emails, msg.as_string())
     server.quit()
     print('送信完了')
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"処理時間: {elapsed_time:.2f}秒")
 except Exception as e:
     print(f"Message could not be sent. Error: {e}")
