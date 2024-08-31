@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
 import jpholiday
+import concurrent.futures
 
 # Chromeのオプションを設定
 options = Options()
@@ -14,9 +15,6 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')  # 必要に応じて追加
 options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
-
-# Selenium WebDriverの初期化
-driver = webdriver.Chrome(options=options)
 
 # 複数のURLをリストで定義
 urls = {
@@ -33,8 +31,10 @@ urls = {
     "中山":"https://nakayamac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01"
 }
 
-# 各URLについて処理を行う
-for area, url in urls.items():
+# 各URLについて処理を行う関数
+def process_url(area, url):
+    # Selenium WebDriverの初期化
+    driver = webdriver.Chrome(options=options)
     # 指定されたURLにアクセス
     driver.get(url)
 
@@ -42,15 +42,14 @@ for area, url in urls.items():
     button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
     button.click()
 
-    print(f"<br>{area}地区センターの空き状況<br>")
+    results = [f"<br>{area}地区センターの空き状況<br>"]
+    
     while True:
         # 現在のページのデータを取得
         html_current = driver.page_source
         soup = BeautifulSoup(html_current, 'html.parser')
         # td要素をすべて取得する
         td_elements = soup.find_all('td')
-        # found_elementsの初期化
-        found_elements = []
 
         # タイトルを月日の昇順でソートするためのキー関数
         def sort_key(title):
@@ -89,7 +88,7 @@ for area, url in urls.items():
 
                 # 土曜日、日曜日の場合のみ出力する
                 if weekday_jp in ["土", "日", "祝"]:
-                    print(f"{title} ({weekday_jp})<br>")
+                    results.append(f"{title} ({weekday_jp})<br>")
 
         # 次のページへのリンクをクリック
         try:
@@ -98,6 +97,17 @@ for area, url in urls.items():
         except:
             break
 
-# ブラウザを閉じる
-driver.quit()
+    # ブラウザを閉じる
+    driver.quit()
 
+    return ''.join(results)
+
+# マルチスレッドでURLを処理し、順番に結果を表示
+with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
+    # futureオブジェクトとエリア名を紐付けて管理
+    futures = {executor.submit(process_url, area, url): area for area, url in urls.items()}
+    results = {area: future.result() for future, area in zip(futures.keys(), futures.values())}
+
+# 結果を指定された順序で表示
+for area in urls.keys():
+    print(results[area])
