@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import time
 from datetime import timedelta
 from selenium.webdriver.chrome.options import Options
+from multiprocessing import Process, Manager
 
 def get_weekday_jp(date_str):
     date = datetime.datetime.strptime(date_str, "%Y/%m/%d")
@@ -57,80 +58,99 @@ def click_next_month_button(driver):
     next_month_button.click()
     time.sleep(4)
 
-def process_center(driver, center, loops):
-    driver.get(center["url"])
-    print(f"<br>{center['name']}の空き状況<br>")
-    time.sleep(4)
+def process_center(center, loops, return_dict, index):
+    # Chromeのオプションを設定
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')  # 必要に応じて追加
+    options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
 
-    start_date = datetime.datetime.today().replace(day=1).date()
-    all_schedule_data = []
+    driver = webdriver.Chrome(options=options)
 
-    for _ in range(loops):
-        for ranges, section in center["sections"]:
-            for idx in ranges:
-                try:
-                    div_element = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, f'//*[@id="root"]/div/div/div/div/div/div/div[1]/div/div[2]/div[2]/div/div/div/div[1]/div/div/div[3]/div[3]/div/div/div/div[2]/div[{idx}]'))
-                    )
-                    all_schedule_data.extend(process_element(div_element, start_date, section))
-                except Exception as e:
-                    print(f"要素が見つかりませんでした: {e}")
+    try:
+        driver.get(center["url"])
+        output = f"<br>{center['name']}の空き状況<br>"
+        time.sleep(4)
 
-        all_schedule_data.sort(key=lambda x: x[0])
-        for data in all_schedule_data:
-            print(f"{data[0]} ({data[1]}) ({data[2]}:{data[3]})"+ "<br>")
-
-        click_next_month_button(driver)
+        start_date = datetime.datetime.today().replace(day=1).date()
         all_schedule_data = []
-        start_date = (start_date + timedelta(days=32)).replace(day=1)
+        today = datetime.datetime.today().date()
 
-centers = [
-    {
-        "name": "神奈川地区センター",
-        "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=0_0bmv1_v&r=d&a=0",
-        "sections": [
-            (range(38, 42), '体育室左面'),
-            (range(43, 47), '体育室中面'),
-            (range(52, 56), '体育室右面')
-        ]
-    },
-    {
-        "name": "神大寺地区センター",
-        "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=a_0bmv1_v&r=d&a=0",
-        "sections": [
-            (range(38, 42), '体育室手前'),
-            (range(43, 47), '体育室中央'),
-            (range(52, 56), '体育室奥')
-        ]
-    },
-    {
-        "name": "菅田地区センター",
-        "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=C_0bmv1_v&r=d&a=0",
-        "sections": [
-            (range(41, 46), '体育室手前'),
-            (range(51, 56), '体育室中央'),
-            (range(57, 62), '体育室奥')
-        ]
-    },
-    # 他の地区センターの情報をここに追加
-]
+        for _ in range(loops):
+            for ranges, section in center["sections"]:
+                for idx in ranges:
+                    try:
+                        div_element = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.XPATH, f'//*[@id="root"]/div/div/div/div/div/div/div[1]/div/div[2]/div[2]/div/div/div/div[1]/div/div/div[3]/div[3]/div/div/div/div[2]/div[{idx}]'))
+                        )
+                        all_schedule_data.extend(process_element(div_element, start_date, section))
+                    except Exception as e:
+                        output += f"要素が見つかりませんでした: {e}<br>"
 
-# Chromeのオプションを設定
-options = Options()
-options.add_argument('--headless')
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')  # 必要に応じて追加
-options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+            all_schedule_data.sort(key=lambda x: x[0])
+            for data in all_schedule_data:
+                output += f"{data[0]} ({data[1]}) ({data[2]}:{data[3]})<br>"
 
-driver = webdriver.Chrome(options=options)
+            click_next_month_button(driver)
+            all_schedule_data = []
+            start_date = (start_date + timedelta(days=32)).replace(day=1)
 
-try:
-    for center in centers:
-        now = datetime.datetime.now()
-        loops = 3 if (now.day > 12 or (now.day == 12 and now.hour >= 9)) else 2
-        process_center(driver, center, loops)
-except Exception as e:
-    print("エラーが発生しました:", e)
-finally:
-    driver.quit()
+        return_dict[index] = output
+
+    except Exception as e:
+        output += f"エラーが発生しました: {e}<br>"
+        return_dict[index] = output
+    finally:
+        driver.quit()
+
+if __name__ == '__main__':
+    centers = [
+        {
+            "name": "神奈川地区センター",
+            "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=0_0bmv1_v&r=d&a=0",
+            "sections": [
+                (range(38, 42), '体育室左面'),
+                (range(43, 47), '体育室中面'),
+                (range(52, 56), '体育室右面')
+            ]
+        },
+        {
+            "name": "神大寺地区センター",
+            "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=a_0bmv1_v&r=d&a=0",
+            "sections": [
+                (range(38, 42), '体育室手前'),
+                (range(43, 47), '体育室中央'),
+                (range(52, 56), '体育室奥')
+            ]
+        },
+        {
+            "name": "菅田地区センター",
+            "url": "https://ufss.f-supportsys2.com/stt?c=r&d=0a0bmv1_v&i=C_0bmv1_v&r=d&a=0",
+            "sections": [
+                (range(41, 46), '体育室手前'),
+                (range(51, 56), '体育室中央'),
+                (range(57, 62), '体育室奥')
+            ]
+        },
+        # 他の地区センターの情報をここに追加
+    ]
+
+    manager = Manager()
+    return_dict = manager.dict()
+    processes = []
+    now = datetime.datetime.now()
+    loops = 3 if (now.day > 12 or (now.day == 12 and now.hour >= 9)) else 2
+
+    for index, center in enumerate(centers):
+        p = Process(target=process_center, args=(center, loops, return_dict, index))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+
+    # 地区センターの順番で結果を表示
+    for index in range(len(centers)):
+        print(return_dict.get(index, ""))
