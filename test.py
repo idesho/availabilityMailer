@@ -88,6 +88,7 @@ def process_url(area, url):
 
                 # 土曜日、日曜日の場合のみ出力する
                 if weekday_jp in ["土", "日", "祝"]:
+                # if "夜間Ⅱ" in title:
                     results.append(f"{title} ({weekday_jp})<br>")
 
         # 次のページへのリンクをクリック

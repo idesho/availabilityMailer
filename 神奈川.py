@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import time
 from datetime import timedelta
 from selenium.webdriver.chrome.options import Options
-from multiprocessing import Process, Manager
+from concurrent.futures import ProcessPoolExecutor
 
 def get_weekday_jp(date_str):
     date = datetime.datetime.strptime(date_str, "%Y/%m/%d")
@@ -58,7 +58,7 @@ def click_next_month_button(driver):
     next_month_button.click()
     time.sleep(4)
 
-def process_center(center, loops, return_dict, index):
+def process_center(center, loops):
     # Chromeのオプションを設定
     options = Options()
     options.add_argument('--headless')
@@ -72,7 +72,7 @@ def process_center(center, loops, return_dict, index):
     try:
         driver.get(center["url"])
         output = f"<br>{center['name']}の空き状況<br>"
-        time.sleep(4)
+        time.sleep(7)
 
         start_date = datetime.datetime.today().replace(day=1).date()
         all_schedule_data = []
@@ -97,11 +97,11 @@ def process_center(center, loops, return_dict, index):
             all_schedule_data = []
             start_date = (start_date + timedelta(days=32)).replace(day=1)
 
-        return_dict[index] = output
+        return output
 
     except Exception as e:
         output += f"エラーが発生しました: {e}<br>"
-        return_dict[index] = output
+        return output
     finally:
         driver.quit()
 
@@ -137,20 +137,12 @@ if __name__ == '__main__':
         # 他の地区センターの情報をここに追加
     ]
 
-    manager = Manager()
-    return_dict = manager.dict()
-    processes = []
     now = datetime.datetime.now()
     loops = 3 if (now.day > 12 or (now.day == 12 and now.hour >= 9)) else 2
 
-    for index, center in enumerate(centers):
-        p = Process(target=process_center, args=(center, loops, return_dict, index))
-        p.start()
-        processes.append(p)
-
-    for p in processes:
-        p.join()
+    with ProcessPoolExecutor() as executor:
+        results = executor.map(process_center, centers, [loops]*len(centers))
 
     # 地区センターの順番で結果を表示
-    for index in range(len(centers)):
-        print(return_dict.get(index, ""))
+    for output in results:
+        print(output)
