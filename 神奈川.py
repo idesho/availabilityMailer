@@ -56,7 +56,7 @@ def process_element(element, start_date, section):
 def click_next_month_button(driver):
     next_month_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div/div/div/div/div/div[1]/div/div[2]/div[2]/div/div/div/div[1]/div/div/div[3]/div[1]/div[3]')
     next_month_button.click()
-    time.sleep(4)
+    time.sleep(10)
 
 def process_center(center, loops):
     # Chromeのオプションを設定
@@ -72,7 +72,7 @@ def process_center(center, loops):
     try:
         driver.get(center["url"])
         output = f"<br>{center['name']}の空き状況<br>"
-        time.sleep(7)
+        time.sleep(10)
 
         start_date = datetime.datetime.today().replace(day=1).date()
         all_schedule_data = []

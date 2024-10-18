@@ -51,13 +51,45 @@ def extract_data_from_td(target_tr, time_td, center, i):
             gym_info = ""  # 追加情報の初期値を設定
 
             # 城郷小机地区センターの場合のみ追加情報を含める
-            if center["name"] == "城郷小机地区センター":
+            if center["name"] in ["城郷小机地区センター", "中村地区センター", "南地区センター", "野庭地区センター"]:
                 if 8 <= i <= 11:
                     gym_info = " (体育室A)"
                 elif 12 <= i <= 15:
                     gym_info = " (体育室B)"
                 elif 16 <= i <= 19:
                     gym_info = " (体育室C)"
+            
+                        # 城郷小机地区センターの場合のみ追加情報を含める
+            if center["name"] == "希望が丘地区センター":
+                if 4 <= i <= 7:
+                    gym_info = " (体育室A)"
+                elif 8 <= i <= 11:
+                    gym_info = " (体育室B)"
+                elif 12 <= i <= 15:
+                    gym_info = " (体育室C)"
+
+            if center["name"] in ["白根地区センター", "都岡地区センター"]:
+                if 0 <= i <= 3:
+                    gym_info = " (体育室1)"
+                elif 4 <= i <= 7:
+                    gym_info = " (体育室2)"
+                elif 8 <= i <= 11:
+                    gym_info = " (体育室3)"
+            
+            if center["name"] in "今宿地区センター":
+                if 4 <= i <= 7:
+                    gym_info = " (体育室1)"
+                elif 8 <= i <= 11:
+                    gym_info = " (体育室2)"
+
+            if center["name"] in "東永谷地区センター":
+                if 8 <= i <= 11:
+                    gym_info = " (体育室1)"
+                elif 12 <= i <= 15:
+                    gym_info = " (体育室2)"
+                elif 16 <= i <= 19:
+                    gym_info = " (体育室3)"
+
             output.append(f"{date_str} {weekday}{gym_info} ({time})")
     return output
 
@@ -101,10 +133,10 @@ def process_center(center):
             # 指定された範囲内のデータを抽出し、整形
             for i in center["range"]:
                 target_td = soup.find('td', id=f'right_v{i}')
-                if target_td is None:
+                # if target_td is None:
                     # エラーメッセージを出力して次の地区センターの処理に移る
-                    print(f"Error: Could not find element with id 'right_v{i}' in {center['name']}")
-                    raise ValueError("Element not found")
+                    # print(f"Error: Could not find element with id 'right_v{i}' in {center['name']}")
+                    # raise ValueError("Element not found")
                 
                 target_tr = target_td.find_parent('tr')
                 time_td = target_td
@@ -122,8 +154,8 @@ def process_center(center):
             # 次の月の情報を取得するために、翌月ボタンをクリック
             next_month_button.click()
     except Exception as e:
-        print(f"Error occurred during processing {center['name']}: {str(e)}")
-    finally:
+        # print(f"Error occurred during processing {center['name']}: {str(e)}")
+    # finally:
         # ブラウザを閉じる
         driver.quit()
 
@@ -134,7 +166,16 @@ if __name__ == '__main__':
     centers = [
         {"url": "https://f-supportsys.com/kouhoku/yoyaku/wb_pub.php?sisetu_code=05", "range": range(16, 20), "name": "篠原地区センター"},
         {"url": "https://f-supportsys.com/kouhoku/yoyaku/wb_pub.php?sisetu_code=03", "range": range(8, 12), "name": "綱島地区センター"},
-        {"url": "https://f-supportsys.com/kouhoku/yoyaku/wb_pub.php?sisetu_code=06", "range": range(8, 20), "name": "城郷小机地区センター"}
+        {"url": "https://f-supportsys.com/kouhoku/yoyaku/wb_pub.php?sisetu_code=06", "range": range(8, 20), "name": "城郷小机地区センター"},
+        {"url": "https://f-supportsys.com/asahi/yoyaku/wb_pub.php?sisetu_code=01", "range": range(4, 16), "name": "希望が丘地区センター"},
+        {"url": "https://f-supportsys.com/asahi/yoyaku/wb_pub.php?sisetu_code=02", "range": range(0, 12), "name": "白根地区センター"},
+        {"url": "https://f-supportsys.com/asahi/yoyaku/wb_pub.php?sisetu_code=03", "range": range(0, 12), "name": "都岡地区センター"},
+        {"url": "https://f-supportsys.com/asahi/yoyaku/wb_pub.php?sisetu_code=04", "range": range(4, 12), "name": "今宿地区センター"},
+        {"url": "https://f-supportsys.com/minami/yoyaku/wb_pub.php?sisetu_code=01", "range": range(8, 16), "name": "南地区センター"},
+        {"url": "https://f-supportsys.com/minami/yoyaku/wb_pub.php?sisetu_code=04", "range": range(8, 20), "name": "中村地区センター"},
+        {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=11", "range": range(12, 16), "name": "港南地区センター"},
+        {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=14", "range": range(8, 20), "name": "東永谷地区センター"},
+        {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=15", "range": range(8, 20), "name": "野庭地区センター"},        
     ]
 
     from datetime import datetime, date
