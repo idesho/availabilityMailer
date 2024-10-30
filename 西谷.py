@@ -59,7 +59,7 @@ driver = webdriver.Chrome(options=options)
 
 try:
     for center in centers:
-        print(f"{center['name']}の空き状況<br>")
+        print(f"<br>{center['name']}の空き状況<br>")
         driver.get(center["url"])
 
         process_count = 0
