@@ -175,7 +175,8 @@ if __name__ == '__main__':
         {"url": "https://f-supportsys.com/minami/yoyaku/wb_pub.php?sisetu_code=04", "range": range(8, 20), "name": "中村地区センター"},
         {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=11", "range": range(12, 16), "name": "港南地区センター"},
         {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=14", "range": range(8, 20), "name": "東永谷地区センター"},
-        {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=15", "range": range(8, 20), "name": "野庭地区センター"},        
+        {"url": "https://f-supportsys.com/kounan/yoyaku/wb_pub.php?sisetu_code=15", "range": range(8, 20), "name": "野庭地区センター"},
+        # {"url": "https://f-supportsys.com/nisiku/yoyaku/wb_pub.php?sisetu_code=01", "range": range(0, 2), "name": "藤棚地区センター"},
     ]
 
     from datetime import datetime, date
