@@ -33,7 +33,7 @@ def check_availability(driver):
     """指定されたURLの空き状況を取得して表示する。"""
     try:
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[4]"))
+            EC.presence_of_element_located((By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[3]"))
         )
     except TimeoutException:
         print("ページの読み込みがタイムアウトしました。")
@@ -42,7 +42,6 @@ def check_availability(driver):
     page_source = driver.page_source
     return page_source
 
-# HTMLソースから空き状況を解析する関数
 def parse_availability(page_source, current_year, current_month, id_range):
     """HTMLソースから空き状況を解析して日付情報を取得する。"""
     soup = BeautifulSoup(page_source, 'html.parser')
@@ -52,14 +51,28 @@ def parse_availability(page_source, current_year, current_month, id_range):
         if td:
             tr = td.find_parent('tr')
             if tr:
-                if id_range.start <= i < id_range.start + 4:
-                    gym_info = "体育室A"
-                elif id_range.start + 4 <= i < id_range.start + 8:
-                    gym_info = "体育室B"
-                elif id_range.start + 8 <= i < id_range.stop:
-                    gym_info = "体育室C"
+                # id_range が range オブジェクトか list かで条件を分ける
+                if isinstance(id_range, range):
+                    if id_range.start <= i < id_range.start + 4:
+                        gym_info = "体育室A"
+                    elif id_range.start + 4 <= i < id_range.start + 8:
+                        gym_info = "体育室B"
+                    elif id_range.start + 8 <= i < id_range.stop:
+                        gym_info = "体育室C"
+                    else:
+                        gym_info = ""
                 else:
-                    gym_info = ""
+                    # 藤棚地区センター用の条件分岐
+                    index = id_range.index(i)
+                    if index < 4:
+                        gym_info = "手前"
+                    elif 4 <= index < 8:
+                        gym_info = "中央"
+                    elif 8 <= index < 12:
+                        gym_info = "奥"
+                    else:
+                        gym_info = ""
+                
                 time_slot = td.text.strip()
                 for td in tr.find_all('td'):
                     onmouseover = td.get('onmouseover')
@@ -75,6 +88,7 @@ def parse_availability(page_source, current_year, current_month, id_range):
     
     date_info_sorted = sorted(date_info, key=lambda x: datetime.strptime(x[0], "%Y/%m/%d"))
     return date_info_sorted
+
 
 # 結果をコンソールに出力する関数
 def display_results(date_info_sorted):
@@ -94,6 +108,7 @@ if __name__ == "__main__":
         {"url": "https://yokohama-shisetsu.com/yoyaku_test/wb_pub.php?sisetu_code=03", "range": range(0, 12), "name": "若草台地区センター"},
         {"url": "https://yokohama-shisetsu.com/yoyaku_test/wb_pub.php?sisetu_code=04", "range": range(0, 12), "name": "美しが丘西地区センター"},
         {"url": "https://yokohama-shisetsu.com/yoyaku_test/wb_pub.php?sisetu_code=05", "range": range(0, 12), "name": "奈良地区センター"},
+        {"url": "https://f-supportsys.com/nisiku/yoyaku/wb_pub.php?sisetu_code=01", "range": list(range(0, 4)) + list(range(8, 12)) + list(range(16, 20)), "name": "藤棚地区センター"},
     ]
     
     # Chromeのオプションを設定
@@ -123,7 +138,18 @@ if __name__ == "__main__":
                 display_results(date_info_sorted)
             
             try:
-                next_button = driver.find_element(By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[4]/span")
+                # 藤棚地区センターかどうかで XPATH を変更
+                if center['name'] == "藤棚地区センター":
+                    next_button = driver.find_element(By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[3]/span")
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[3]"))
+                    )
+                else:
+                    next_button = driver.find_element(By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[4]/span")
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, "/html/body/form/table[1]/tbody/tr[3]/td/table/tbody/tr/td[4]"))
+                    )
+                
                 next_button.click()
                 current_month += 1
                 if current_month > 12:
