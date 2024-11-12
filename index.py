@@ -20,7 +20,8 @@ commands = [
     "python3 小綱篠.py",
     "python3 西谷.py",
     "python3 神奈川.py",
-    "python3 完成系.py"
+    "python3 完成系.py",
+    "python3 試作.py"
 ]
 
 # 並行してコマンドを実行
