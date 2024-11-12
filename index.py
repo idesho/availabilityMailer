@@ -29,7 +29,7 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
     results = list(executor.map(run_command, commands))
 
 # 結果を結合
-result = "<br>".join(results)
+result = "".join(results)
 
 # 送信先のメールアドレスを取得
 to_emails = os.getenv('TO_EMAILS').split(',')

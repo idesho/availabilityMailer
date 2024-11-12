@@ -106,9 +106,9 @@ def process_url(area, url_info):
                     for idx, td in enumerate(group):
                         time_slot = time_slots[idx]
                         status = td.get_text(strip=True)
-                        if status == "〇":
+                        if status == "〇" and (weekday_jp in ["土", "日", "祝"]):
                             # 日付、曜日、場所情報をリストに追加
-                            availability_list.append((day_date, f"{day_date.strftime('%Y/%m/%d')}({weekday_jp}) ({location}) ({time_slot})"))
+                            availability_list.append((day_date, f"{day_date.strftime('%Y/%m/%d')}({weekday_jp}) ({location}) ({time_slot})<br>"))
 
                     # 次の日付に進める
                     day_date += timedelta(days=1)
