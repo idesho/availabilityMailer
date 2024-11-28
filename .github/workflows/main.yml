@@ -2,7 +2,7 @@ name: CI
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # 30分ごとに実行
+    - cron: "*/30 * * * *"  # 30分ごとに実行
   push:
     branches:
       - master  # masterブランチへのプッシュ時にも実行
