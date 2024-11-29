@@ -34,29 +34,18 @@ jobs:
         sudo apt-get install -y python3-pip
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
-    - name: Set Chrome PATH
-      run: |
-        echo "PATH=\$PATH:/usr/bin" >> $GITHUB_ENV
-
     - name: Check Chrome and ChromeDriver versions
       run: |
         google-chrome --version
         chromedriver --version
 
-    - name: Ensure correct file path
-      run: |
-        echo "Current working directory: $(pwd)"
-        echo "Available files in $(pwd):"
-        ls -lah
-
     - name: Run your application
       run: |
         if [ -f "test2.py" ]; then
           python3 test2.py
-        else
+        else:
           echo "test2.py does not exist in the current directory"
           exit 1
-        fi
 
     - name: Upload debug logs
       if: always()
