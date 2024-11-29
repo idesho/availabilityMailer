@@ -147,7 +147,7 @@ def process_url(area, url):
     results = [f"<br>{area}地区センターの空き状況<br>"]
     try:
         # Selenium WebDriverの初期化
-        driver = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", options=options)
+        driver = webdriver.Chrome(options=options)
         logger.info(f"{area}: WebDriver initialized successfully")
         
         # 指定されたURLにアクセス
