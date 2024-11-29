@@ -2,10 +2,10 @@ name: CI
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/30 * * * *"  # 30分ごとに実行
   push:
     branches:
-      - master
+      - master  # masterブランチへのプッシュ時にも実行
 
 jobs:
   build:
@@ -26,27 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip chromium-browser chromium-chromedriver
+        sudo apt-get install -y python3-pip
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
-
-    - name: Ensure correct file path
-      run: |
-        echo "Current working directory: $(pwd)"
-        echo "Available files in $(pwd):"
-        ls -lah
 
     - name: Run your application
       run: |
-        if [ -f "test.py" ]; then
-          python3 test.py
-        else
-          echo "test.py does not exist in the current directory"
-          exit 1
-        fi
-
-    - name: Upload debug logs
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: debug-logs
-        path: test_debug.log
+        python3 index.py
