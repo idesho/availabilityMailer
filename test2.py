@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -26,31 +27,36 @@ options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')  # 必要に応じて追加
 options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
 
+# ChromeDriverのパスを明示的に指定
+service = Service("/usr/bin/chromedriver")
+
 # URLリストの定義
 urls = {
     '白幡': "https://shirahatac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '矢向': "https://yakoc-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '潮田': "https://ushiodac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '寺尾': "https://teraoc-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '生麦': "https://namamugic-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '末吉': "https://sueyoshic-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # '長津田': "https://nagatsutac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # "中川西": "https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # "仲町台":"https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=02",
-    # "北山田": "https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=03",
-    # "中山":"https://nakayamac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
 } 
 
 # 各URLについて処理を行う関数
 def process_url(area, url):
     try:
-        logging.info(f"{area} の処理を開始します。")
-        driver = webdriver.Chrome(options=options)
+        logging.info(f"{area} の処理を開始します。URL: {url}")
+
+        # Selenium WebDriverを起動
+        logging.info(f"{area} - ChromeDriver を初期化します。")
+        driver = webdriver.Chrome(service=service, options=options)
+
+        # URL にアクセス
+        logging.info(f"{area} - URL にアクセス中。")
         driver.get(url)
 
         # ボタンのクリック
-        button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
-        button.click()
+        try:
+            logging.info(f"{area} - ボタンを探しています。")
+            button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
+            button.click()
+            logging.info(f"{area} - ボタンをクリックしました。")
+        except Exception as e:
+            logging.error(f"{area} - ボタンが見つからない、またはクリックに失敗しました: {e}")
+            raise
 
         results = [f"<br>{area}地区センターの空き状況<br>"]
         
@@ -59,8 +65,8 @@ def process_url(area, url):
             html_current = driver.page_source
             soup = BeautifulSoup(html_current, 'html.parser')
             td_elements = soup.find_all('td')
-
-            # td要素の処理
+            
+            logging.info(f"{area} - ページ内のテーブルデータ数: {len(td_elements)}")
             for td_element in td_elements:
                 title = td_element.get('title')
                 if title:
@@ -68,13 +74,16 @@ def process_url(area, url):
 
             # 次ページへ
             try:
-                next_link = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#next a")))
+                next_link = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#next a")))
                 driver.execute_script("arguments[0].click();", next_link)
-            except:
+                logging.info(f"{area} - 次ページに移動しました。")
+            except Exception as e:
+                logging.info(f"{area} - 次ページが見つからないか、移動できません: {e}")
                 break
 
+        # ブラウザを閉じる
         driver.quit()
-        logging.info(f"{area} の処理が完了しました。")
+        logging.info(f"{area} の処理が正常に完了しました。")
         return ''.join(results)
 
     except Exception as e:
