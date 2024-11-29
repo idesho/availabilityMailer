@@ -80,14 +80,14 @@ jobs:
         python3 index.py
 
     - name: Upload logs for debugging
-      if: failure()
+      if: always()  # 成功・失敗に関わらず表示
       uses: actions/upload-artifact@v3
       with:
         name: selenium-logs
         path: selenium.log
 
     - name: Upload screenshot for debugging
-      if: failure()
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: selenium-screenshot
