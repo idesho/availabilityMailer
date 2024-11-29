@@ -7,6 +7,8 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import concurrent.futures
 import subprocess
+from pytz import timezone
+
 
 # 処理開始時間を記録
 start_time = time.time()
@@ -34,8 +36,10 @@ result = "".join(results)
 # 送信先のメールアドレスを取得
 to_emails = os.getenv('TO_EMAILS').split(',')
 
-now = datetime.now()
-subject = f"{now.strftime('%Y/%m/%d %H時%M分')}現在の空き状況"
+# 現在時刻を日本時間に変換
+now_utc = datetime.now(timezone('UTC'))  # UTCの現在時刻を取得
+now_jst = now_utc.astimezone(timezone('Asia/Tokyo'))  # JSTに変換
+subject = f"{now_jst.strftime('%Y/%m/%d %H時%M分')}現在の空き状況"
 
 # メールの作成
 msg = MIMEMultipart()
