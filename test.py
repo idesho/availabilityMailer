@@ -123,6 +123,7 @@ from datetime import datetime
 import jpholiday
 import concurrent.futures
 import logging
+import traceback
 
 # ログ設定
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -136,12 +137,11 @@ options.add_argument('--disable-gpu')
 options.add_argument('--window-size=1920x1080')
 options.add_argument('--ignore-certificate-errors')
 
-
 # URLリスト
 urls = {
     '白幡': "https://shirahatac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
     '矢向': "https://yakoc-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    # 以下省略...
+    # 必要に応じて他のURLを追加
 }
 
 # 各URLについて処理を行う関数
@@ -190,6 +190,7 @@ def process_url(area, url):
 
     except Exception as e:
         logging.error(f"Error processing {area}: {e}")
+        logging.error(traceback.format_exc())  # 詳細なエラーログを追加
         if driver:
             # エラー時のスクリーンショット保存
             driver.save_screenshot(f"{area}_error.png")
@@ -199,11 +200,18 @@ def process_url(area, url):
     finally:
         if driver:
             driver.quit()
+        return f"{area}: 処理に失敗しました。"
 
 # マルチスレッドでURLを処理
 with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
     futures = {executor.submit(process_url, area, url): area for area, url in urls.items()}
-    results = {area: future.result() for future, area in zip(futures.keys(), futures.values())}
+    results = {}
+    for future in concurrent.futures.as_completed(futures):
+        area = futures[future]
+        try:
+            results[area] = future.result()
+        except Exception as e:
+            logging.error(f"Error processing result for {area}: {e}")
 
 # 結果を出力
 for area, result in results.items():
