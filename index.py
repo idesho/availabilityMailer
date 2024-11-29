@@ -18,7 +18,7 @@ def run_command(command):
     return subprocess.run(command, shell=True, capture_output=True, text=True).stdout
 
 commands = [
-    "python3 test.py",
+    "python3 test2.py",
     "python3 小綱篠.py",
     "python3 西谷.py",
     "python3 神奈川.py",
