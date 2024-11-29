@@ -1,3 +1,38 @@
+# name: CI
+
+# on:
+#   schedule:
+#     - cron: "*/30 * * * *"  # 30分ごとに実行
+#   push:
+#     branches:
+#       - master  # masterブランチへのプッシュ時にも実行
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+
+#     - name: Set up environment variables
+#       run: |
+#         echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+#         echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+#         echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+#         echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+#         echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+
+#     - name: Install dependencies
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y python3-pip
+#         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+
+#     - name: Run your application
+#       run: |
+#         python3 index.py
+
 name: CI
 
 on:
@@ -26,9 +61,15 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip
+        sudo apt-get install -y wget unzip python3-pip
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
-    - name: Run your application
-      run: |
-        python3 index.py
+    - name: Run Python script
+      run: python3 test.py
+
+    - name: Upload error screenshots
+      if: always()  # 常にスクリーンショットをアップロード
+      uses: actions/upload-artifact@v3
+      with:
+        name: error-screenshots
+        path: "*.png"  # すべてのPNGファイルをアップロード
