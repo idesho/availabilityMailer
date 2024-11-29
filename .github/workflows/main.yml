@@ -26,51 +26,21 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget gnupg
-        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-        sudo apt-get install -y python3-pip unzip
+        sudo apt-get install -y python3-pip chromium-browser chromium-chromedriver
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
-    - name: Set up ChromeDriver
+    - name: Ensure correct file path
       run: |
-        # Chromeのバージョンを取得
-        CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-        
-        # メジャーバージョンだけを抽出
-        CHROME_MAJOR_VERSION=$(echo "$CHROME_VERSION" | cut -d '.' -f 1)
-        
-        # ChromeDriverの最新バージョンを取得
-        DRIVER_VERSION=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION")
-        
-        # バージョンが取得できなければエラーを出力
-        if [ -z "$DRIVER_VERSION" ]; then
-          echo "Failed to retrieve the ChromeDriver version for Chrome version $CHROME_VERSION"
-          exit 1
-        fi
+        echo "Current working directory: $(pwd)"
+        echo "Available files in $(pwd):"
+        ls -lah
 
-        # ChromeDriverをダウンロードしてインストール
-        wget -N "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/local/bin/
-        rm chromedriver_linux64.zip
-
-        # PATHを更新
-        echo "PATH=\$PATH:/usr/local/bin" >> $GITHUB_ENV
-
-    - name: Check Chrome and ChromeDriver versions
+    - name: Run your application
       run: |
-        google-chrome --version
-        chromedriver --version
-
-    - name: Run the script
-      run: |
-        if [ -f "test2.py" ]; then
-          python3 test2.py
+        if [ -f "test.py" ]; then
+          python3 test.py
         else
-          echo "test2.py does not exist in the current directory"
+          echo "test.py does not exist in the current directory"
           exit 1
         fi
 
