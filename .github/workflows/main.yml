@@ -81,14 +81,14 @@ jobs:
 
     - name: Upload logs for debugging
       if: failure()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: selenium-logs
         path: selenium.log
 
     - name: Upload screenshot for debugging
       if: failure()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: selenium-screenshot
         path: screenshot.png
