@@ -2,10 +2,10 @@ name: CI
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # 30分ごとに実行
+    - cron: "*/10 * * * *"
   push:
     branches:
-      - master  # masterブランチへのプッシュ時にも実行
+      - master
 
 jobs:
   build:
@@ -32,23 +32,21 @@ jobs:
     - name: Ensure correct file path
       run: |
         echo "Current working directory: $(pwd)"
-        echo "Available files:"
-        ls -R
+        echo "Available files in $(pwd):"
+        ls -lah
 
     - name: Run your application
       run: |
-        if [ -f "index.py" ]; then
-          python3 index.py
+        if [ -f "test.py" ]; then
+          python3 test.py
         else
-          echo "index.py does not exist in the current directory"
+          echo "test.py does not exist in the current directory"
           exit 1
         fi
 
-    - name: Upload debug logs on failure
-      if: failure()
+    - name: Upload debug logs
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: debug-logs
-        path: |
-          test_debug.log
-          /tmp/
+        path: test_debug.log
