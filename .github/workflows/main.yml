@@ -26,9 +26,22 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pip chromium-browser chromium-chromedriver
-        export PATH=$PATH:/usr/lib/chromium-browser/
+        sudo apt-get install -y wget gnupg
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        sudo apt-get install -y python3-pip
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+
+    - name: Set Chrome PATH
+      run: |
+        echo "PATH=\$PATH:/usr/bin" >> $GITHUB_ENV
+
+    - name: Check Chrome and ChromeDriver versions
+      run: |
+        google-chrome --version
+        chromedriver --version
 
     - name: Ensure correct file path
       run: |
@@ -38,10 +51,10 @@ jobs:
 
     - name: Run your application
       run: |
-        if [ -f "test.py" ]; then
-          python3 test.py
+        if [ -f "test2.py" ]; then
+          python3 test2.py
         else
-          echo "test.py does not exist in the current directory"
+          echo "test2.py does not exist in the current directory"
           exit 1
         fi
 
