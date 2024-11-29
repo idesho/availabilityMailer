@@ -1,3 +1,38 @@
+# name: CI
+
+# on:
+#   schedule:
+#     - cron: "*/30 * * * *"  # 30分ごとに実行
+#   push:
+#     branches:
+#       - master  # masterブランチへのプッシュ時にも実行
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+
+#     - name: Set up environment variables
+#       run: |
+#         echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+#         echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+#         echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+#         echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+#         echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+
+#     - name: Install dependencies
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y python3-pip
+#         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+
+#     - name: Run your application
+#       run: |
+#         python3 index.py
+
 name: CI
 
 on:
@@ -23,12 +58,37 @@ jobs:
         echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
         echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
 
-    - name: Install dependencies
+    - name: Install Chrome and ChromeDriver
       run: |
         sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
+        CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+        wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+
+    - name: Install Python dependencies
+      run: |
         sudo apt-get install -y python3-pip
         pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
-    - name: Run your application
+    - name: Run main script
       run: |
         python3 index.py
+
+    - name: Upload logs for debugging
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: selenium-logs
+        path: selenium.log
+
+    - name: Upload screenshot for debugging
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: selenium-screenshot
+        path: screenshot.png
