@@ -34,30 +34,17 @@ urls = {
 def process_url(area, url):
     try:
         logging.info(f"{area} の処理を開始します。URL: {url}")
-
-        # WebDriverを起動
         driver = webdriver.Chrome(options=options)
+
         driver.get(url)
-
-        # ボタンをクリック
-        try:
-            button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
-            button.click()
-        except Exception as e:
-            logging.error(f"{area} - ボタンのクリックに失敗: {e}")
-            raise
-
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn"))).click()
         results = [f"<br>{area}地区センターの空き状況<br>"]
 
-        # データを取得
         while True:
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-            for td_element in soup.find_all('td'):
-                title = td_element.get('title')
-                if title:
-                    results.append(f"{title}<br>")
+            td_elements = soup.find_all('td')
+            results.extend([f"{td.get('title')}<br>" for td in td_elements if td.get('title')])
 
-            # 次のページに進む
             try:
                 next_link = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#next a")))
                 driver.execute_script("arguments[0].click();", next_link)
@@ -68,7 +55,7 @@ def process_url(area, url):
         return ''.join(results)
 
     except Exception as e:
-        logging.error(f"{area} の処理中にエラー: {e}")
+        logging.error(f"{area} の処理中にエラーが発生しました: {e}")
         logging.debug(traceback.format_exc())
         return f"{area} の処理中にエラーが発生しました。"
 
@@ -80,6 +67,6 @@ try:
 
     for area, result in results.items():
         print(result)
-except Exception as main_e:
-    logging.error(f"全体の処理中にエラー: {main_e}")
+except Exception as e:
+    logging.error(f"全体の処理中にエラーが発生しました: {e}")
     logging.debug(traceback.format_exc())
