@@ -75,17 +75,7 @@ try:
             soup = BeautifulSoup(driver.page_source, "html.parser")
             trs = soup.find_all("tr")[center["trs_range"]]
 
-            # 現在の年月と次の月の計算
-            base_date = datetime.now() + timedelta(days=30 * process_count)
-            year = base_date.year
-            month = base_date.month
-            if month + process_count > 12:  # 翌年に繰り越し
-                year += 1
-                month = (month + process_count) % 12
-            else:
-                month += process_count
-            current_year_month = f"{year}/{month}"
-
+            current_year_month = (datetime.now() + timedelta(days=30 * process_count)).strftime('%Y/%-m')
             today = datetime.now().timestamp()
             tr_named_array = {}
 
