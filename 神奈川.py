@@ -72,7 +72,7 @@ def process_center(center, loops):
     try:
         driver.get(center["url"])
         output = f"<br>{center['name']}の空き状況<br>"
-        time.sleep(10)
+        time.sleep(15)
 
         start_date = datetime.datetime.today().replace(day=1).date()
         all_schedule_data = []
