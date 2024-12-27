@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import jpholiday
@@ -34,21 +34,13 @@ options.add_argument('--window-size=1920x1080')
 # URLs and configurations for each center
 centers = [
     {
-        "name": "西谷地区センター",
-        "url": "https://yoyaku.hodogaya-kumin.org/reserve/yoyakulist/center/3",
-        "trs_range": slice(1, 13),
+        "name": "東戸塚地区センター",
+        "url": "https://uketsuke.chiiki-support.com/reserve/yoyakulist",
+        "trs_range": slice(27, 39),
         "names": [
-            "体育室(A) 9:00-12:00", "体育室(A) 12:00-15:00", "体育室(A) 15:00-18:00", "体育室(A) 18:00-21:00",
-            "体育室(B) 9:00-12:00", "体育室(B) 12:00-15:00", "体育室(B) 15:00-18:00", "体育室(B) 18:00-21:00",
-            "体育室(C) 9:00-12:00", "体育室(C) 12:00-15:00", "体育室(C) 15:00-18:00", "体育室(C) 18:00-21:00"
-        ]
-    },
-    {
-        "name": "保土ヶ谷地区センター",
-        "url": "https://yoyaku.hodogaya-kumin.org/reserve/yoyakulist/center/1",
-        "trs_range": slice(1, 5),
-        "names": [
-            "体育室(2/3面) 9:00-12:00", "体育室(2/3面)12:00-15:00", "体育室(2/3面) 15:00-18:00", "体育室(2/3面)18:00-21:00",
+            "体育室(手前) 9:00-12:00", "体育室(手前) 12:00-15:00", "体育室(手前) 15:00-18:00", "体育室(手前) 18:00-21:00",
+            "体育室(中央) 9:00-12:00", "体育室(中央) 12:00-15:00", "体育室(中央) 15:00-18:00", "体育室(中央) 18:00-21:00",
+            "体育室(奥) 9:00-12:00", "体育室(奥) 12:00-15:00", "体育室(奥) 15:00-18:00", "体育室(奥) 18:00-21:00"
         ]
     }
 ]
@@ -60,6 +52,13 @@ try:
     for center in centers:
         print(f"<br>{center['name']}の空き状況<br>")
         driver.get(center["url"])
+
+        # セレクトボックスで「東戸塚地区センター」を選択
+        select = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, "cboCenter"))
+        )
+        dropdown = Select(select)
+        dropdown.select_by_visible_text("東戸塚地区センター")  # セレクトボックスのテキストで選択
 
         process_count = 0
         current_time = datetime.now()
