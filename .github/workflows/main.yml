@@ -3,7 +3,7 @@ name: CI
 on:
   schedule:
     # 8時から24時の間で1時間ごとに実行
-    - cron: "0 8-23 * * *"
+    - cron: "0 23-14 * * *"
   push:
     branches:
       - master # masterブランチへのプッシュ時にも実行
