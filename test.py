@@ -29,6 +29,7 @@ urls = {
     "仲町台":"https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=02",
     "北山田": "https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=03",
     "中山":"https://nakayamac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
+    "都築":"https://tsuzuki-center-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01"
 }
 
 # 各URLについて処理を行う関数
