@@ -122,7 +122,7 @@ def process_url(area, url_info):
             if next_month_button.find_element(By.TAG_NAME, "img"):
                 next_month_button.click()  # 翌月へ進む
                 # 明示的に current_date を翌月の1日にリセット
-                current_date = (current_date + timedelta(days=31)).replace(day=1)
+                current_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
             else:
                 break  # イメージタグがなければループ終了
         except:
