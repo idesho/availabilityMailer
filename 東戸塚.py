@@ -74,7 +74,8 @@ try:
             soup = BeautifulSoup(driver.page_source, "html.parser")
             trs = soup.find_all("tr")[center["trs_range"]]
 
-            current_year_month = (datetime.now() + timedelta(days=30 * process_count)).strftime('%Y/%-m')
+            current_year_month = (datetime.now().replace(day=1) + timedelta(days=process_count * 30)).strftime('%Y/%-m')
+
             today = datetime.now().timestamp()
             tr_named_array = {}
 
