@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import jpholiday
 from datetime import datetime, timedelta
 from selenium.webdriver.chrome.options import Options
+from dateutil.relativedelta import relativedelta
 
 def get_weekday_jp(date):
     weekday = date.strftime("%a")
@@ -75,7 +76,7 @@ try:
             soup = BeautifulSoup(driver.page_source, "html.parser")
             trs = soup.find_all("tr")[center["trs_range"]]
 
-            current_year_month = (datetime.now() + timedelta(days=30 * process_count)).strftime('%Y/%-m')
+            current_year_month = (datetime.now() + relativedelta(months=process_count)).strftime('%Y/%-m')
             today = datetime.now().timestamp()
             tr_named_array = {}
 
