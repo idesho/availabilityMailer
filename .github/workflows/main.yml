@@ -1,35 +1,89 @@
-name: CI
+# name: CI
+
+# on:
+#   schedule:
+#     # 8時から24時の間で1時間ごとに実行
+#     - cron: "0 0-14 * * *"
+#   push:
+#     branches:
+#       - master # masterブランチへのプッシュ時にも実行
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Set up environment variables
+#         run: |
+#           echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+#           echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+#           echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+#           echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+#           echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+
+#       - name: Install dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y python3-pip
+#           pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+
+#       - name: Run your application
+#         run: |
+#           python3 index.py
+
+# .github/workflows/scrape-notify.yml
+name: scrape-and-mail
 
 on:
+  # 8:00〜23:00 (JST) を毎時実行
   schedule:
-    # 8時から24時の間で1時間ごとに実行
-    - cron: "0 0-14 * * *"
+    - cron: '0 23 * * *'      # 08:00 JST (= 23:00 UTC 前日)
+    - cron: '0 0-14 * * *'    # 09:00-23:00 JST (= 00-14 UTC)
   push:
-    branches:
-      - master # masterブランチへのプッシュ時にも実行
+    branches: [ master ]
 
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # ✔ ここで Secrets を一括設定
+    env:
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      TO_EMAILS: ${{ secrets.TO_EMAILS }}
+      # Chrome 同時起動数を抑えたい場合は適宜上書き
+      MAX_WORKERS: 4
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      # 1. リポジトリ取得
+      - uses: actions/checkout@v4
 
-      - name: Set up environment variables
-        run: |
-          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
-          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
-          echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
-          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
-          echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+      # 2. Chrome + ChromeDriver を最新版で導入
+      - uses: browser-actions/setup-chrome@v1  # 自動で両方を揃える :contentReference[oaicite:0]{index=0}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+      # 3. Python 3.11（Selenium 4.13 以降推奨）
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Run your application
+      # 4. 依存ライブラリ
+      - name: Install Python dependencies
         run: |
-          python3 index.py
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          # requirements.txt 例:
+          # selenium>=4.13
+          # beautifulsoup4
+          # jpholiday
+          # python-dotenv
+          # pytz
+
+      # 5. スクレイパ & メール送信
+      - name: Run notifier
+        run: python notify.py
