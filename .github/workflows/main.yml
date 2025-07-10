@@ -1,103 +1,35 @@
-# name: CI
-
-# on:
-#   schedule:
-#     # 8時から24時の間で1時間ごとに実行
-#     - cron: "0 0-14 * * *"
-#   push:
-#     branches:
-#       - master # masterブランチへのプッシュ時にも実行
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
-
-#       - name: Set up environment variables
-#         run: |
-#           echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
-#           echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
-#           echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
-#           echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
-#           echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
-
-#       - name: Install dependencies
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y python3-pip
-#           pip3 install selenium beautifulsoup4 jpholiday python-dotenv
-
-#       - name: Run your application
-#         run: |
-#           python3 index.py
-
-# .github/workflows/scrape-debug.yml
-name: scrape-debug
+name: CI
 
 on:
-  workflow_dispatch:      # 手動起動
-  # schedule: …            # 動かすならあとで復活
+  schedule:
+    # 8時から24時の間で1時間ごとに実行
+    - cron: "0 0-14 * * *"
+  push:
+    branches:
+      - master # masterブランチへのプッシュ時にも実行
 
 jobs:
-  run:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    env:
-      SMTP_HOST: ${{ secrets.SMTP_HOST }}
-      SMTP_PORT: ${{ secrets.SMTP_PORT }}
-      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-      TO_EMAILS: ${{ secrets.TO_EMAILS }}
-      MAX_WORKERS: 3           # まずは 3 に下げて OOM を回避
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    # ① Chrome + Driver をペアで導入（※重要）
-    - uses: browser-actions/setup-chrome@v1    # :contentReference[oaicite:1]{index=1}
-      with:
-        install-chromedriver: true
+      - name: Set up environment variables
+        run: |
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+          echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+          echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
 
-    # ② Python
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
-    - name: Install deps
-      run: |
-        pip install -r requirements.txt
-
-    # ③ バージョン確認 & スクリプト実行
-    - name: Run with extra logging
-      run: |
-        google-chrome --version || chrome --version
-        chromedriver --version || true
-        python - <<'PY'
-        import selenium, sys, platform
-        print("selenium", selenium.__version__)
-        PY
-        # -------- 実行 --------
-        python notify.py || true               # 失敗しても続行
-
-    # ④ 失敗時にスクショ/HTML を Artifact に
-    - name: Upload artifacts
-      if: failure() || always()               # 常にアップしておくと安心
-      uses: actions/upload-artifact@v4
-      with:
-        name: scrape-dump
-        path: |
-          *.png
-          *.html
-
-    # ⑤ “非ヘッドレス” でも試す（エラー切り分け用）
-    - name: Rerun inside xvfb (non-headless)
-      if: failure()
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb
-        xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
-          python notify.py || true
+      - name: Run your application
+        run: |
+          python3 index.py
