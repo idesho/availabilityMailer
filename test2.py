@@ -49,16 +49,14 @@ JP_WEEKDAY = dict(zip(
 
 def create_driver() -> webdriver.Chrome:
     """新ヘッドレス & UA 偽装で driver 作成."""
-    opts = Options()
-    opts.add_argument("--headless=new")          # 新ヘッドレス
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--window-size=1920,1080")
-    opts.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/126.0.0.0 Safari/537.36"
-    )
+    options = Options()
+    options.add_argument("--headless")  # 通常のヘッドレスモード
+    options.add_argument("--no-sandbox")  # セキュリティ制限を緩和
+    options.add_argument("--disable-dev-shm-usage")  # 共有メモリの問題を回避
+    options.add_argument("--window-size=1920,1080")  # 画面サイズを設定
+    options.add_argument("--disable-gpu")  # GPUを無効化
+    options.add_argument("--disable-software-rasterizer")  # ソフトウェアラスタライザを無効化
+    driver = webdriver.Chrome(options=options)
     return webdriver.Chrome(options=opts)
 
 def sort_key(title: str | None) -> tuple[int, int]:
