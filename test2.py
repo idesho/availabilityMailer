@@ -57,7 +57,7 @@ def create_driver() -> webdriver.Chrome:
     options.add_argument("--disable-gpu")  # GPUを無効化
     options.add_argument("--disable-software-rasterizer")  # ソフトウェアラスタライザを無効化
     driver = webdriver.Chrome(options=options)
-    return webdriver.Chrome(options=opts)
+    return webdriver.Chrome(options=options)
 
 def sort_key(title: str | None) -> tuple[int, int]:
     """title='YYYY/MM/DD ...' → (MM, DD)"""
