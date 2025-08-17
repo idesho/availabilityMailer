@@ -1,35 +1,86 @@
+# name: CI
+
+# on:
+#   schedule:
+#     # 8時から24時の間で1時間ごとに実行
+#     - cron: "0 0-14 * * *"
+#   push:
+#     branches:
+#       - master # masterブランチへのプッシュ時にも実行
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Set up environment variables
+#         run: |
+#           echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
+#           echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
+#           echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
+#           echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
+#           echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+
+#       - name: Install dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y python3-pip
+#           pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+
+#       - name: Run your application
+#         run: |
+#           python3 index.py
+
 name: CI
 
 on:
   schedule:
-    # 8時から24時の間で1時間ごとに実行
-    - cron: "0 0-14 * * *"
+    # JST 08:00〜24:00 は UTC 23:00(前日)〜15:00
+    - cron: "0 23-15 * * *"
   push:
-    branches:
-      - master # masterブランチへのプッシュ時にも実行
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Tokyo
+      PYTHONIOENCODING: "utf-8"
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      TO_EMAILS: ${{ secrets.TO_EMAILS }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up environment variables
-        run: |
-          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> $GITHUB_ENV
-          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> $GITHUB_ENV
-          echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
-          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
-          echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+      # Chrome を導入（Selenium 用）
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
 
-      - name: Run your application
+      - name: Install Python dependencies
         run: |
-          python3 index.py
+          python -m pip install --upgrade pip
+          pip install selenium webdriver-manager beautifulsoup4 jpholiday python-dotenv pytz
+
+      - name: Run
+        run: |
+          python index.py
+
+      - name: Upload artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-artifacts
+          path: artifacts/
+          if-no-files-found: warn
