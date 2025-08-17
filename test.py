@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import jpholiday
 import concurrent.futures
+import logging
 
 # Chromeのオプションを設定
 options = Options()
@@ -15,6 +16,9 @@ options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')  # 必要に応じて追加
 options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+
+# ログの設定
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # 複数のURLをリストで定義
 urls = {
@@ -112,4 +116,4 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
 
 # 結果を指定された順序で表示
 for area in urls.keys():
-    print(results[area])
+    logging.info(results[area])
