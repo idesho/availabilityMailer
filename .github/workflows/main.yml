@@ -39,7 +39,7 @@ name: CI
 on:
   schedule:
     # JST 08:00〜24:00 は UTC 23:00(前日)〜15:00
-    - cron: "0 23-15 * * *"
+    - cron: "0 0-14 * * *"
   push:
     branches: [ master ]
 
