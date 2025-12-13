@@ -2,11 +2,11 @@ name: CI
 
 on:
   schedule:
-    # JSTで「8:00〜24:00」を意図しているなら、UTCではこう（23時=JST8時、0-14時=JST9-23時）
-    - cron: "0 23,0-14 * * *"
+    # 8時から24時の間で1時間ごとに実行
+    - cron: "0 0-14 * * *"
   push:
     branches:
-      - master
+      - master # masterブランチへのプッシュ時にも実行
 
 jobs:
   build:
@@ -14,27 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # v2→v4推奨 :contentReference[oaicite:0]{index=0}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5 # :contentReference[oaicite:1]{index=1}
-        with:
-          python-version: "3.11"
-
-      - name: Set up Chrome
-        uses: browser-actions/setup-chrome@v1 # Chrome/Driverを揃えやすい :contentReference[oaicite:2]{index=2}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install selenium beautifulsoup4 jpholiday python-dotenv pytz
-
-      # 追加①: Seleniumの前にHTTP疎通確認（ここが最重要）
-      - name: Probe URL (HTTP status)
-        run: |
-          u="https://shirahatac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01"
-          echo "== $u"
-          curl -sSL -o /dev/null -w "%{http_code} %{url_effective}\n" "$u"
+        uses: actions/checkout@v2
 
       - name: Set up environment variables
         run: |
@@ -43,19 +23,13 @@ jobs:
           echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> $GITHUB_ENV
           echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> $GITHUB_ENV
           echo "TO_EMAILS=${{ secrets.TO_EMAILS }}" >> $GITHUB_ENV
-          # 追加②: CIでは重いので並列を落とす（あなたのコードが env 対応してる前提）
-          echo "MAX_WORKERS=1" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install selenium beautifulsoup4 jpholiday python-dotenv
 
       - name: Run your application
         run: |
-          python3 index.py | tee run.log
-
-      # 追加③: 失敗しても必ず dump を回収できるようにする
-      - name: Upload debug artifacts (always)
-        if: always()
-        uses: actions/upload-artifact@v4 # :contentReference[oaicite:3]{index=3}
-        with:
-          name: debug
-          path: |
-            dump
-            result.html
+          python3 index.py
