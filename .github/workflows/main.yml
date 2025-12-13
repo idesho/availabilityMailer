@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install selenium beautifulsoup4 jpholiday python-dotenv
+          pip install selenium beautifulsoup4 jpholiday python-dotenv pytz
 
       # 追加①: Seleniumの前にHTTP疎通確認（ここが最重要）
       - name: Probe URL (HTTP status)
