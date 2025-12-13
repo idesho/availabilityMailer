@@ -34,7 +34,7 @@ jobs:
         run: |
           u="https://shirahatac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01"
           echo "== $u"
-          curl -sSIL -o /dev/null -w "%{http_code} %{url_effective}\n" "$u"
+          curl -sSL -o /dev/null -w "%{http_code} %{url_effective}\n" "$u"
 
       - name: Set up environment variables
         run: |
@@ -48,7 +48,7 @@ jobs:
 
       - name: Run your application
         run: |
-          python3 index.py
+          python3 index.py | tee run.log
 
       # 追加③: 失敗しても必ず dump を回収できるようにする
       - name: Upload debug artifacts (always)
