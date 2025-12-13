@@ -10,6 +10,7 @@ HTML 文字列として返すモジュールスクリプト。
 """
 from __future__ import annotations
 from datetime import datetime
+import logging
 import concurrent.futures
 import jpholiday
 from bs4 import BeautifulSoup
@@ -56,7 +57,6 @@ def create_driver() -> webdriver.Chrome:
     options.add_argument("--window-size=1920,1080")  # 画面サイズを設定
     options.add_argument("--disable-gpu")  # GPUを無効化
     options.add_argument("--disable-software-rasterizer")  # ソフトウェアラスタライザを無効化
-    driver = webdriver.Chrome(options=options)
     return webdriver.Chrome(options=options)
 
 def sort_key(title: str | None) -> tuple[int, int]:
@@ -71,6 +71,7 @@ def sort_key(title: str | None) -> tuple[int, int]:
 # ────────────────────────────────────────────────
 def scrape_one(area: str, url: str) -> str:
     """1 施設ぶんを取得して HTML 文字列で返す."""
+    logging.info("start scraping: %s", area)
     driver = create_driver()
     try:
         driver.get(url)
@@ -104,6 +105,7 @@ def scrape_one(area: str, url: str) -> str:
             except Exception:
                 break
 
+        logging.info("scrape success: %s", area)
         return "".join(lines)
 
     finally:
@@ -112,13 +114,18 @@ def scrape_one(area: str, url: str) -> str:
 
 def scrape() -> str:
     """全施設まとめて実行し、HTML を返す."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     results: dict[str, str] = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         fut_to_area = {ex.submit(scrape_one, area, url): area for area, url in URLS.items()}
         for fut in concurrent.futures.as_completed(fut_to_area):
             area = fut_to_area[fut]
-            results[area] = fut.result()
+            try:
+                results[area] = fut.result()
+            except Exception as exc:  # 捕捉してログに残す
+                logging.exception("scrape failed: %s", area)
+                results[area] = f"<br><b>{area}地区センターの空き状況</b><br>取得失敗: {exc}<br>"
 
     # 表示順は URLS の並びを維持
     return "".join(results[area] for area in URLS.keys())
