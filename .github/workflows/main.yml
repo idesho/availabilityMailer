@@ -1,20 +1,21 @@
 name: CI
 
 on:
+  workflow_dispatch: {}   # ← 外から「Run workflow」ボタンで実行できる
   schedule:
-    # 8時から24時の間で1時間ごとに実行
+    # 8時から24時の間で1時間ごとに実行（JST想定なら cronは注意）
     - cron: "0 0-14 * * *"
   push:
     branches:
-      - master # masterブランチへのプッシュ時にも実行
+      - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # ← 自宅Macのrunnerで動く
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up environment variables
         run: |
@@ -26,9 +27,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          pip3 install selenium beautifulsoup4 jpholiday python-dotenv
+          python3 -m pip install -U pip
+          pip3 install selenium beautifulsoup4 jpholiday python-dotenv pytz
 
       - name: Run your application
         run: |
