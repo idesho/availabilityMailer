@@ -10,24 +10,8 @@ from selenium.webdriver.chrome.options import Options
 
 from bs4 import BeautifulSoup
 from datetime import datetime
-import jpholiday
 import re
-
-
-# ───────────────────────────────
-# 曜日（祝日判定付き）を日本語で返す
-# ───────────────────────────────
-def get_weekday_jp(date_str: str) -> str:
-    date = datetime.strptime(date_str, "%Y/%m/%d")
-    weekday = date.strftime("%A")
-    weekday_jp_dict = {
-        "Monday": "月", "Tuesday": "火", "Wednesday": "水",
-        "Thursday": "木", "Friday": "金", "Saturday": "土", "Sunday": "日"
-    }
-    weekday_jp = weekday_jp_dict.get(weekday, "")
-    if jpholiday.is_holiday_name(date):
-        weekday_jp = "祝"
-    return weekday_jp
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 
 # ───────────────────────────────
@@ -151,7 +135,7 @@ def display_results(date_info_sorted):
     today_dt = datetime.strptime(datetime.now().strftime("%Y/%m/%d"), "%Y/%m/%d")
     for date_str, weekday_jp, time_slot, gym_info in date_info_sorted:
         target_dt = datetime.strptime(date_str, "%Y/%m/%d")
-        if target_dt >= today_dt and (weekday_jp in ["土", "日", "祝"]):
+        if target_dt >= today_dt and is_weekend_or_holiday(target_dt):
             print(f"{date_str} ({weekday_jp}) ({time_slot}: {gym_info})<br>")
 
 

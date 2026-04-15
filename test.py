@@ -5,8 +5,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
-import jpholiday
 import concurrent.futures
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 # Chromeのオプションを設定
 options = Options()
@@ -71,24 +71,10 @@ def process_url(area, url):
                 date_str = title.split(' ')[0]
                 date_obj = datetime.strptime(date_str, "%Y/%m/%d")
 
-                # 祝日の場合は曜日の部分を「祝」とする
-                if jpholiday.is_holiday(date_obj):
-                    weekday_jp = "祝"
-                else:
-                    # 曜日を日本語で取得
-                    weekday_str = date_obj.strftime("%A")
-                    weekday_jp = {
-                        "Monday": "月",
-                        "Tuesday": "火",
-                        "Wednesday": "水",
-                        "Thursday": "木",
-                        "Friday": "金",
-                        "Saturday": "土",
-                        "Sunday": "日"
-                    }[weekday_str]
+                weekday_jp = get_weekday_jp(date_obj)
 
                 # 土曜日、日曜日の場合のみ出力する
-                if weekday_jp in ["土", "日", "祝"]:
+                if is_weekend_or_holiday(date_obj):
                 # if "夜間Ⅱ" in title:
                     results.append(f"{title} ({weekday_jp})<br>")
 

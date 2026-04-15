@@ -3,25 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import jpholiday
 from datetime import datetime, timedelta
 from selenium.webdriver.chrome.options import Options
-
-def get_weekday_jp(date):
-    weekday = date.strftime("%a")
-    weekdays_japanese = {
-        'Mon': '月',
-        'Tue': '火',
-        'Wed': '水',
-        'Thu': '木',
-        'Fri': '金',
-        'Sat': '土',
-        'Sun': '日'
-    }
-    japanese_weekday = weekdays_japanese[weekday]
-    if jpholiday.is_holiday(date):
-        japanese_weekday = "祝"
-    return japanese_weekday
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 # Chrome options setup
 options = Options()
@@ -107,7 +91,7 @@ try:
                 formatted_date = date_obj.strftime('%Y/%-m/%-d')
                 jp_weekday = get_weekday_jp(date_obj)
                 for facility in tr_named_dict[key_ts]:
-                    if jp_weekday in ["土", "日", "祝"]:
+                    if is_weekend_or_holiday(date_obj):
                         print(f"{formatted_date}({jp_weekday}) {facility}<br>")
 
             # 次月へ

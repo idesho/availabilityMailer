@@ -11,13 +11,13 @@ HTML 文字列として返すモジュールスクリプト。
 from __future__ import annotations
 from datetime import datetime
 import concurrent.futures
-import jpholiday
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 # ────────────────────────────────────────────────
 # 1. 設定  ─────────────────────────────────────────
@@ -42,11 +42,6 @@ MAX_WORKERS = 4  # Chrome 同時起動数 (リソース節約)
 # ────────────────────────────────────────────────
 # 2. 共通ユーティリティ  ───────────────────────────
 # ────────────────────────────────────────────────
-JP_WEEKDAY = dict(zip(
-    ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
-    ("月", "火", "水", "木", "金", "土", "日"),
-))
-
 def create_driver() -> webdriver.Chrome:
     """新ヘッドレス & UA 偽装で driver 作成."""
     options = Options()
@@ -91,8 +86,8 @@ def scrape_one(area: str, url: str) -> str:
                 if title and "体育室" in title and td.get_text(strip=True) == "〇":
                     date_str = title.split()[0]  # 'YYYY/MM/DD'
                     dt = datetime.strptime(date_str, "%Y/%m/%d")
-                    weekday = "祝" if jpholiday.is_holiday(dt) else JP_WEEKDAY[dt.strftime("%A")]
-                    if weekday in ("土", "日", "祝"):
+                    weekday = get_weekday_jp(dt)
+                    if is_weekend_or_holiday(dt):
                         lines.append(f"{title}（{weekday}）<br>")
 
             # 次ページへ

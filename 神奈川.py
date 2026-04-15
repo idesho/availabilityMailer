@@ -1,5 +1,4 @@
 import datetime
-import jpholiday
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,27 +8,7 @@ import time
 from datetime import timedelta
 from selenium.webdriver.chrome.options import Options
 from concurrent.futures import ProcessPoolExecutor
-
-def get_weekday_jp(date_str):
-    date = datetime.datetime.strptime(date_str, "%Y/%m/%d")
-    weekday = date.strftime("%A")
-
-    weekdays_jp = {
-        "Monday": "月",
-        "Tuesday": "火",
-        "Wednesday": "水",
-        "Thursday": "木",
-        "Friday": "金",
-        "Saturday": "土",
-        "Sunday": "日"
-    }
-
-    weekday_jp = weekdays_jp.get(weekday, "")
-    holiday_name = jpholiday.is_holiday_name(date)
-    if holiday_name:
-        weekday_jp = "祝"
-
-    return weekday_jp
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 def process_element(element, start_date, section):
     div_html = element.get_attribute('outerHTML')
@@ -48,7 +27,7 @@ def process_element(element, start_date, section):
             date_str = date.strftime("%Y/%m/%d")
             weekday_jp = get_weekday_jp(date_str)
             if date >= today:
-                if weekday_jp in ["土", "日", "祝"]:
+                if is_weekend_or_holiday(date):
                     schedule_data.append((date_str, weekday_jp, first_bottom_element, section))
 
     return schedule_data

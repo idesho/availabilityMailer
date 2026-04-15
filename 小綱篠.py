@@ -4,35 +4,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from urllib.parse import parse_qs
-import jpholiday
 from datetime import datetime, date
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from multiprocessing import Pool
-
-# 日付から曜日を取得し、祝日の場合は"(祝)"を追加する関数
-def get_weekday(date_str):
-    date_obj = datetime.strptime(date_str, "%Y/%m/%d")
-    weekday = date_obj.strftime("%A")  # 英語表記の曜日を取得
-    
-    # 曜日を日本語表記に変換
-    weekday_jp_dict = {
-        "Monday": "月",
-        "Tuesday": "火",
-        "Wednesday": "水",
-        "Thursday": "木",
-        "Friday": "金",
-        "Saturday": "土",
-        "Sunday": "日",
-    }
-    weekday_jp = weekday_jp_dict.get(weekday, "")
-    
-    # 祝日の判定
-    holiday_name = jpholiday.is_holiday_name(date_obj)
-    if holiday_name:
-        weekday_jp = "祝"
-    
-    return f"({weekday_jp})"
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 # 同じ処理を関数にまとめる
 def extract_data_from_td(target_tr, time_td, center, i):
@@ -46,7 +22,7 @@ def extract_data_from_td(target_tr, time_td, center, i):
             month = parsed_href['tuki'][0]
             day = parsed_href['hi'][0]
             date_str = f"{year}/{month}/{day}"
-            weekday = get_weekday(date_str)  # get_weekday 関数を呼び出す
+            weekday = get_weekday_jp(date_str)
             time = time_td.text.strip()
             gym_info = ""  # 追加情報の初期値を設定
 
@@ -90,7 +66,7 @@ def extract_data_from_td(target_tr, time_td, center, i):
                 elif 16 <= i <= 19:
                     gym_info = " (体育室3)"
 
-            output.append(f"{date_str} {weekday}{gym_info} ({time})")
+            output.append(f"{date_str} ({weekday}){gym_info} ({time})")
     return output
 
 def process_center(center):
@@ -196,6 +172,5 @@ if __name__ == '__main__':
             date_str = item.split()[0]
             item_date = datetime.strptime(date_str, "%Y/%m/%d").date()
             if item_date >= today:
-                weekday = item.split()[1]  # データから曜日の部分を取得
-                if weekday in ["(土)", "(日)", "(祝)"]:  # 曜日が土曜日、日曜日、または祝日であるかどうかをチェック
+                if is_weekend_or_holiday(item_date):
                     print(item + "<br>")

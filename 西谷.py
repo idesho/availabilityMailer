@@ -3,26 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import jpholiday
 from datetime import datetime, timedelta
 from selenium.webdriver.chrome.options import Options
 from dateutil.relativedelta import relativedelta
-
-def get_weekday_jp(date):
-    weekday = date.strftime("%a")
-    weekdays_japanese = {
-        'Mon': '月',
-        'Tue': '火',
-        'Wed': '水',
-        'Thu': '木',
-        'Fri': '金',
-        'Sat': '土',
-        'Sun': '日'
-    }
-    japanese_weekday = weekdays_japanese[weekday]
-    if jpholiday.is_holiday(date):
-        japanese_weekday = "祝"
-    return japanese_weekday
+from utils import get_weekday_jp, is_weekend_or_holiday
 
 # Chrome options setup
 options = Options()
@@ -99,7 +83,7 @@ try:
                 formatted_date = date.strftime('%Y/%-m/%-d')
                 japanese_weekday = get_weekday_jp(date)
                 for facility in tr_named_array[key]:
-                    if japanese_weekday in ["土", "日", "祝"]:
+                    if is_weekend_or_holiday(date):
                         print(f"{formatted_date}({japanese_weekday}) {facility}<br>")
 
             next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="contents_wide"]/form/div[1]/button[2]')))
