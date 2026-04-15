@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -10,7 +11,8 @@ from utils import get_weekday_jp, is_weekend_or_holiday
 
 # Chromeのオプションを設定
 options = Options()
-options.add_argument('--headless')
+# 新しいheadlessモードの方が描画差異による不安定さが少ない
+options.add_argument('--headless=new')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
@@ -45,9 +47,18 @@ def process_url(area, url_info):
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
-    # 月別ボタンがクリック可能になるまで待機してクリック
-    button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
-    button.click()
+    # headlessでは「クリック可能」判定が不安定な場合があるため、JSクリックにフォールバック
+    try:
+        button = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, ".serch_btn"))
+        )
+        driver.execute_script("arguments[0].click();", button)
+    except TimeoutException:
+        button = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".serch_btn"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+        driver.execute_script("arguments[0].click();", button)
 
     # 空き状況データを保存するリスト
     results = [f"<br>{area}地区センターの空き状況<br>"]  # 地区名のヘッダーを追加
