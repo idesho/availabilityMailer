@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch: 
   schedule:
     # 8時から24時の間で1時間ごとに実行
     - cron: "0 0-14 * * *"
