@@ -14,22 +14,22 @@ options.add_argument('--headless')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')  # 必要に応じて追加
-options.add_argument('--window-size=1920x1080')  # 必要に応じて追加
+options.add_argument('--window-size=1920,1080')  # PC表示にする(区切りはカンマ)
 
 # 複数のURLをリストで定義
 urls = {
-    '白幡': "https://shirahatac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '矢向': "https://yakoc-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '潮田': "https://ushiodac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '寺尾': "https://teraoc-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '生麦': "https://namamugic-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '末吉': "https://sueyoshic-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    '長津田': "https://nagatsutac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    "中川西": "https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    "仲町台":"https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=02",
-    "北山田": "https://tsuzuki-koryu-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=03",
-    "中山":"https://nakayamac-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01",
-    "都築":"https://tsuzuki-center-nexres.azurewebsites.net/nexres/KR/KSR0100/index.php?mokuteki=01"
+    '白幡': "https://shirahata.actio-shisetsu-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    '矢向': "https://yako.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    '潮田': "https://ushioda.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    '寺尾': "https://terao.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    '生麦': "https://namamugi.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    '末吉': "https://sueyoshi.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    # '長津田': "https://nagatsuta.npo-ttk-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    "中川西": "https://tsuzukikoryu-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    "仲町台":"https://tsuzukikoryu-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=02",
+    "北山田": "https://tsuzukikoryu-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=03",
+    "中山":"https://m-shisetsu-kyokai-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01",
+    "都築":"https://tsuzukicenter-nexres.com/nexres/KR/KSR0100/index.php?mokuteki=01"
 }
 
 # 各URLについて処理を行う関数
@@ -40,8 +40,8 @@ def process_url(area, url):
     driver.get(url)
 
     # 月別ボタンがクリック可能になるまで待機
-    button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "serch_btn")))
-    button.click()
+    button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//a[contains(@class,'serch_btn') and normalize-space()='月別']")))
+    driver.execute_script("arguments[0].click();", button)
 
     results = [f"<br>{area}地区センターの空き状況<br>"]
     
